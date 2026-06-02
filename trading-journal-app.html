@@ -899,6 +899,47 @@ const A={
     return[...tagged,...untagged];
   },
 
+  weeklyBreakdown(yr,mo,byDate){
+    const p2=n=>String(n).padStart(2,'0');
+    const firstDow=new Date(yr,mo,1).getDay();
+    const daysInMo=new Date(yr,mo+1,0).getDate();
+    const weeks=[];
+    let ws=1-firstDow;
+    while(ws<=daysInMo){
+      const we=ws+6;
+      let pnl=0,win=0,loss=0,traded=0;
+      for(let d=ws;d<=we&&d<=daysInMo;d++){
+        if(d<1)continue;
+        const v=byDate[`${yr}-${p2(mo+1)}-${p2(d)}`];
+        if(v){pnl+=v.pnl;traded++;if(v.pnl>0)win++;else loss++;}
+      }
+      weeks.push({vs:Math.max(1,ws),ve:Math.min(daysInMo,we),pnl,win,loss,traded});
+      ws+=7;
+    }
+    return weeks;
+  },
+
+  monthlyHistory(recs){
+    const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const map={};
+    recs.forEach(r=>{const k=r.date.slice(0,7);if(!map[k])map[k]=[];map[k].push(r)});
+    const sorted=Object.entries(map).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,12);
+    return sorted.map(([month,rs],i,arr)=>{
+      const dayMap={};
+      rs.forEach(r=>{if(!dayMap[r.date])dayMap[r.date]=0;dayMap[r.date]+=r.pnl});
+      const days=Object.values(dayMap),n=days.length;
+      const wins=days.filter(p=>p>0).length;
+      const pnl=days.reduce((s,p)=>s+p,0);
+      let change=null;
+      if(arr[i+1]){
+        const pm={};arr[i+1][1].forEach(r=>{if(!pm[r.date])pm[r.date]=0;pm[r.date]+=r.pnl});
+        change=pnl-Object.values(pm).reduce((s,p)=>s+p,0);
+      }
+      const [y,m]=month.split('-');
+      return{month,label:`${MN[+m-1]} ${y}`,n,wr:n?(wins/n)*100:0,pnl,change,yr:+y,mo:+m-1};
+    });
+  },
+
   // ── Charts ────────────────────────────────────────────────────────────────
   lineChart(data){
     this._ld=data;
@@ -1631,6 +1672,56 @@ ${(()=>{
   ${DN.map(d=>`<div class="cal-dh">${d}</div>`).join('')}
   ${cellHtml}
 </div>
+${(()=>{
+  const weeks=this.weeklyBreakdown(yr,mo,byDate);
+  if(!weeks.some(w=>w.traded>0))return'';
+  const mLbl=MN[mo].slice(0,3);
+  const wRows=weeks.map(w=>{
+    const pc=w.pnl>=0?'var(--p)':'var(--r)';
+    return`<tr>
+      <td style="font-family:var(--mono);font-size:12px;color:var(--dim)">${mLbl} ${w.vs}–${w.ve}</td>
+      <td style="text-align:center;font-family:var(--mono);font-size:12px">${w.traded||'—'}</td>
+      <td style="text-align:center;font-family:var(--mono);font-size:12px;color:var(--p)">${w.win||'—'}</td>
+      <td style="text-align:center;font-family:var(--mono);font-size:12px;color:var(--r)">${w.loss||'—'}</td>
+      <td style="text-align:right;font-family:var(--mono);font-size:12px;color:${pc}">${w.traded?F.pnl(w.pnl):'—'}</td>
+    </tr>`;
+  }).join('');
+  return`<div class="sg" style="margin-top:20px">
+  <div class="sec-hd"><div class="sec-ttl">WEEKLY BREAKDOWN</div><span style="font-size:11px;color:var(--dim)">${MN[mo]} ${yr}</span></div>
+  <div class="tbl-wrap"><table>
+    <thead><tr>
+      <th>WEEK</th><th style="text-align:center">TRADED</th><th style="text-align:center">WIN</th><th style="text-align:center">LOSS</th><th style="text-align:right">P&amp;L</th>
+    </tr></thead>
+    <tbody>${wRows}</tbody>
+  </table></div>
+</div>`;
+})()}
+${(()=>{
+  const hist=this.monthlyHistory(recs);
+  if(hist.length<2)return'';
+  const mRows=hist.map(h=>{
+    const pc=h.pnl>=0?'var(--p)':'var(--r)';
+    const cc=h.change===null?'var(--dim)':h.change>=0?'var(--p)':'var(--r)';
+    const chg=h.change===null?'—':(h.change>=0?'▲ ':'▼ ')+F.pnl(Math.abs(h.change));
+    const isActive=h.yr===yr&&h.mo===mo;
+    return`<tr style="cursor:pointer${isActive?';background:var(--p15)':''}" onclick="A.s.calYear=${h.yr};A.s.calMonth=${h.mo};A.render()">
+      <td style="font-family:var(--mono);font-size:12px${isActive?';color:var(--p)':''}">${h.label}${isActive?' ◂':''}</td>
+      <td style="text-align:center;font-family:var(--mono);font-size:12px;color:var(--dim)">${h.n}</td>
+      <td style="text-align:center;font-family:var(--mono);font-size:12px;color:${h.wr>=50?'var(--p)':'var(--r)'}">${F.pct(h.wr)}</td>
+      <td style="text-align:right;font-family:var(--mono);font-size:12px;color:${pc}">${F.pnl(h.pnl)}</td>
+      <td style="text-align:right;font-family:var(--mono);font-size:12px;color:${cc}">${chg}</td>
+    </tr>`;
+  }).join('');
+  return`<div class="sg" style="margin-top:20px">
+  <div class="sec-hd"><div class="sec-ttl">MONTH-OVER-MONTH</div><span style="font-size:11px;color:var(--dim)">${hist.length} months</span></div>
+  <div class="tbl-wrap"><table>
+    <thead><tr>
+      <th>MONTH</th><th style="text-align:center">DAYS</th><th style="text-align:center">WIN RATE</th><th style="text-align:right">P&amp;L</th><th style="text-align:right">vs PREV</th>
+    </tr></thead>
+    <tbody>${mRows}</tbody>
+  </table></div>
+</div>`;
+})()}
 </div>`;
   },
 
