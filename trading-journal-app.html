@@ -726,7 +726,7 @@ const CS={
     const p=document.getElementById('csPanel');
     p.innerHTML=opts.map(o=>`<div class="cs-item${o.val===cur?' cs-active':''}" data-val="${esc(o.val)}">${esc(o.label)}</div>`).join('');
     p.querySelectorAll('.cs-item').forEach(el=>el.addEventListener('click',()=>{
-      const v=el.dataset.val,l=el.textContent;this.close();if(this._cb)cb(v,l);
+      const v=el.dataset.val,l=el.textContent;this.close();cb(v,l);
     }));
     p.style.display='block';this._pos(tr,p);
   },
