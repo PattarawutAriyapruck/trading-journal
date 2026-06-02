@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node .agents/skills/impeccable/scripts/context.mjs)",
+      "PowerShell(node .agents/skills/impeccable/scripts/context.mjs 2>&1)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\patta\\\\Downloads\\\\Trading-Journal-App\\\\.claude\" 2>/dev/null; ls \"C:\\\\Users\\\\patta\\\\Downloads\\\\Trading-Journal-App\\\\.claude\" 2>/dev/null || echo \"dir created\")",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__Claude_in_Chrome__list_connected_browsers",
+      "Bash(node \"C:\\\\Users\\\\patta\\\\.claude\\\\skills\\\\impeccable\\\\scripts\\\\context.mjs\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\patta\\\\Downloads\\\\Trading-Journal-App\\\\.claude\")"
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+node_modules/
+trading-journal.db
+.env

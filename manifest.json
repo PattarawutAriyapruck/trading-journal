@@ -1,0 +1,19 @@
+{
+  "name": "Trading Journal",
+  "short_name": "TJ",
+  "description": "Track and analyze your trading performance",
+  "start_url": "trading-journal-app.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#030303",
+  "theme_color": "#030303",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
