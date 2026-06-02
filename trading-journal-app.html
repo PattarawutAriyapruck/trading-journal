@@ -187,16 +187,20 @@ textarea{resize:vertical;min-height:72px}
 .e6{animation:fadeUp .38s .30s ease-out both}
 .e7{animation:fadeUp .38s .36s ease-out both}
 
-/* FOOTER */
-.footer{border-top:1px solid var(--bd);padding:16px 20px;display:flex;align-items:center;gap:8px;color:var(--mute);font-size:11px;letter-spacing:.5px}
-
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.09);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:rgba(0,255,136,.25)}
 
-@media(prefers-reduced-motion:reduce){.e1,.e2,.e3,.e4,.e5,.e6,.e7{animation:none}.dot{animation:none}}
+/* TICK FLASH — live value change */
+@keyframes flashUp{0%{background:var(--p15);box-shadow:inset 0 0 0 1px var(--p30)}100%{background:var(--s1);box-shadow:none}}
+@keyframes flashDn{0%{background:var(--r15);box-shadow:inset 0 0 0 1px var(--r30)}100%{background:var(--s1);box-shadow:none}}
+.stat.flash-up{animation:flashUp .7s ease-out}
+.stat.flash-dn{animation:flashDn .7s ease-out}
+.cnt{font-variant-numeric:tabular-nums}
+
+@media(prefers-reduced-motion:reduce){.e1,.e2,.e3,.e4,.e5,.e6,.e7{animation:none}.dot{animation:none}.stat.flash-up,.stat.flash-dn{animation:none}}
 @media(max-width:600px){.wrap{padding:20px 14px}.stat-val{font-size:18px}.nav-tab{padding:6px 9px;font-size:11px}}
 
 /* CALENDAR */
@@ -371,9 +375,6 @@ textarea{resize:vertical;min-height:72px}
   .pt-pct{font-size:18px}
   .pt-note{font-size:13px}
   .pt-hd{gap:8px}
-
-  /* Footer replaced by bottom nav */
-  .footer{display:none}
 }
 
 /* ─── Narrow phones ≤ 414px ─────────────────── */
@@ -486,7 +487,6 @@ textarea{resize:vertical;min-height:72px}
 </nav>
 
 <main class="main"><div class="wrap"><div id="root"></div></div></main>
-<footer class="footer"><span class="dot" style="width:5px;height:5px"></span>SQLITE MODE &nbsp;·&nbsp; DATA STORED ON SERVER</footer>
 
 <!-- Bottom Navigation (mobile) -->
 <nav class="nav-bottom" id="navBottom" aria-label="Mobile navigation">
@@ -637,6 +637,8 @@ const F={
   date:s=>{if(!s)return'—';const d=new Date(s+'T00:00:00');return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})},
   ds:s=>{if(!s)return'—';const d=new Date(s+'T00:00:00');return`${d.getMonth()+1}/${d.getDate()}`},
 };
+// Counter format map — shared by count-up wrappers (ctr) and animateCounters()
+const CFMT={pnl:F.pnl,'$':F.$,pct:F.pct,int:v=>String(Math.round(v)),num2:v=>(+v).toFixed(2),sign:v=>{const n=Math.round(v);return(n>0?'+':'')+n}};
 const today=()=>new Date().toISOString().split('T')[0];
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -768,20 +770,40 @@ const A={
     calYear:new Date().getFullYear(),calMonth:new Date().getMonth(),
     targets:[],
   },
+  _applyData(d){
+    this.s.accounts=d.accounts||[];
+    this.s.records=d.records||[];
+    this.s.transactions=d.transactions||[];
+    this.s.targets=d.targets||[];
+    if(Array.isArray(d.strategies))this.s.strategies=d.strategies;
+    if(Array.isArray(d.assets))this.s.assets=d.assets;
+    this.s.active=d.activeAcc||(this.s.accounts[0]?.id||null);
+    this._dataSig=JSON.stringify([d.accounts,d.records,d.transactions,d.targets,d.strategies,d.assets,d.activeAcc]);
+  },
   async load(){
     try{
       const d=await apiFetch('/load');
       if(!d)return;
-      this.s.accounts=d.accounts||[];
-      this.s.records=d.records||[];
-      this.s.transactions=d.transactions||[];
-      this.s.targets=d.targets||[];
-      if(Array.isArray(d.strategies))this.s.strategies=d.strategies;
-      if(Array.isArray(d.assets))this.s.assets=d.assets;
-      this.s.active=d.activeAcc||(this.s.accounts[0]?.id||null);
+      this._applyData(d);
       document.getElementById('ls').style.display='none';
       this.render();
     }catch(e){this.showLogin();}
+  },
+  // Re-pull the latest data from the server (called on every nav) so multiple
+  // open screens stay in sync without a logout/login. Only re-renders when
+  // something actually changed, so an unchanged view's count-up isn't cut off.
+  async refresh(){
+    if(this._refreshing)return;
+    this._refreshing=true;
+    try{
+      const d=await apiFetch('/load');
+      if(!d)return;
+      const sig=JSON.stringify([d.accounts,d.records,d.transactions,d.targets,d.strategies,d.assets,d.activeAcc]);
+      if(sig===this._dataSig)return;
+      this._applyData(d);
+      this.render();
+    }catch(e){}
+    finally{this._refreshing=false;}
   },
 
   save(){
@@ -998,6 +1020,7 @@ ${data.map((d,i)=>{const h=Math.max(1,(Math.abs(d.pnl)/mx)*(cH/2)),x=i*(cW/data.
     const na=s.n===0,pc=s.tot>=0?'pos':'neg';
     const sc=(lbl,val,cls='')=>`<div class="stat"><div class="stat-lbl">${lbl}</div><div class="stat-val${cls?' '+cls:''}">${val}</div></div>`;
     const sv=(v)=>na?'<span style="color:var(--mute)">—</span>':v;
+    const ctr=(val,fmt,key)=>`<span class="cnt" data-count="${val}" data-fmt="${fmt}" data-k="${key}">${(CFMT[fmt]||CFMT.num2)(val)}</span>`;
     const acctTargets=this.s.targets.filter(t=>t.accId===this.s.active);
     const targetsHtml=acctTargets.map(t=>{
       const pct=Math.max(0,Math.min(100,t.target>0?(s.tot/t.target)*100:0));
@@ -1052,41 +1075,41 @@ ${data.map((d,i)=>{const h=Math.max(1,(Math.abs(d.pnl)/mx)*(cH/2)),x=i*(cW/data.
 <div class="sg e1">
   <div class="sg-lbl">P&amp;L OVERVIEW</div>
   <div class="stat-grid">
-    ${sc('Total P&L',`<span class="${pc}">${F.pnl(s.tot)}</span>`)}
-    ${sc('Return',`<span class="${pc}">${F.pct(s.ret)}</span>`)}
-    ${sc('Current Capital',F.$(s.cap))}
-    ${sc('Net Deposits',s.netTx!==0?`<span class="${s.netTx>0?'pos':'neg'}">${F.pnl(s.netTx)}</span>`:`<span style="color:var(--dim)">—</span>`)}
-    ${sc('Initial Capital',F.$(s.init))}
+    ${sc('Total P&L',`<span class="${pc}">${ctr(s.tot,'pnl','totpnl')}</span>`)}
+    ${sc('Return',`<span class="${pc}">${ctr(s.ret,'pct','ret')}</span>`)}
+    ${sc('Current Capital',ctr(s.cap,'$','cap'))}
+    ${sc('Net Deposits',s.netTx!==0?`<span class="${s.netTx>0?'pos':'neg'}">${ctr(s.netTx,'pnl','ntx')}</span>`:`<span style="color:var(--dim)">—</span>`)}
+    ${sc('Initial Capital',ctr(s.init,'$','init'))}
   </div>
 </div>
 
 <div class="sg e2">
   <div class="sg-lbl">WIN / LOSS</div>
   <div class="stat-grid">
-    ${sc('Win Rate',sv(`<span class="${s.wr>=50?'pos':'neg'}">${F.pct(s.wr)}</span>`))}
-    ${sc('Trading Days',s.n)}
-    ${sc('Winning Days',sv(`<span class="pos">${s.nw}</span>`))}
-    ${sc('Losing Days',sv(`<span class="neg">${s.nl}</span>`))}
+    ${sc('Win Rate',sv(`<span class="${s.wr>=50?'pos':'neg'}">${ctr(s.wr,'pct','wr')}</span>`))}
+    ${sc('Trading Days',ctr(s.n,'int','n'))}
+    ${sc('Winning Days',sv(`<span class="pos">${ctr(s.nw,'int','nw')}</span>`))}
+    ${sc('Losing Days',sv(`<span class="neg">${ctr(s.nl,'int','nl')}</span>`))}
   </div>
 </div>
 
 <div class="sg e3">
   <div class="sg-lbl">RISK / REWARD</div>
   <div class="stat-grid">
-    ${sc('Profit Factor',sv(`<span class="${s.pf>=1.5?'pos':s.pf>=1?'neu':'neg'}">${s.pf.toFixed(2)}</span>`))}
-    ${sc('Avg Win',sv(`<span class="pos">${F.pnl(s.avgW)}</span>`))}
-    ${sc('Avg Loss',sv(`<span class="neg">${F.pnl(-s.avgL)}</span>`))}
-    ${sc('Best Day',sv(`<span class="pos">${F.pnl(s.best)}</span>`))}
-    ${sc('Worst Day',sv(`<span class="neg">${F.pnl(s.worst)}</span>`))}
+    ${sc('Profit Factor',sv(`<span class="${s.pf>=1.5?'pos':s.pf>=1?'neu':'neg'}">${ctr(s.pf,'num2','pf')}</span>`))}
+    ${sc('Avg Win',sv(`<span class="pos">${ctr(s.avgW,'pnl','avgw')}</span>`))}
+    ${sc('Avg Loss',sv(`<span class="neg">${ctr(-s.avgL,'pnl','avgl')}</span>`))}
+    ${sc('Best Day',sv(`<span class="pos">${ctr(s.best,'pnl','best')}</span>`))}
+    ${sc('Worst Day',sv(`<span class="neg">${ctr(s.worst,'pnl','worst')}</span>`))}
   </div>
 </div>
 
 <div class="sg e4">
   <div class="sg-lbl">STREAKS</div>
   <div class="stat-grid">
-    ${sc('Current Streak',sv(`<span class="${s.streak>0?'pos':s.streak<0?'neg':''}">${(s.streak>0?'+':'')+s.streak}</span>`))}
-    ${sc('Max Win Streak',sv(`<span class="pos">${s.mw}</span>`))}
-    ${sc('Max Loss Streak',sv(`<span class="neg">${s.ml}</span>`))}
+    ${sc('Current Streak',sv(`<span class="${s.streak>0?'pos':s.streak<0?'neg':''}">${ctr(s.streak,'sign','streak')}</span>`))}
+    ${sc('Max Win Streak',sv(`<span class="pos">${ctr(s.mw,'int','mw')}</span>`))}
+    ${sc('Max Loss Streak',sv(`<span class="neg">${ctr(s.ml,'int','ml')}</span>`))}
   </div>
 </div>
 
@@ -1263,8 +1286,24 @@ ${(()=>{
 
   vSettings(){
     const mkTag=(name,type)=>`<span class="tag"><span>${esc(name)}</span><button class="tag-del" onclick="A.del${type==='strat'?'Strat':'Asset'}('${esc(name)}')" title="Remove">×</button></span>`;
+    const sc=(lbl,val)=>`<div class="stat"><div class="stat-lbl">${lbl}</div><div class="stat-val">${val}</div></div>`;
+    const ctr=(val,fmt,key)=>`<span class="cnt" data-count="${val}" data-fmt="${fmt}" data-k="${key}">${(CFMT[fmt]||CFMT.num2)(val)}</span>`;
+    const accN=this.s.accounts.length,recN=this.s.records.length,txN=this.s.transactions.length;
+    const allPnl=this.s.records.reduce((a,r)=>a+r.pnl,0);
+    const since=this.s.accounts.map(a=>a.created).filter(Boolean).sort()[0];
     return`<div class="e1">
   <div class="sec-hd" style="margin-bottom:24px"><div class="sec-ttl">SETTINGS</div></div>
+
+  <div class="sg e1" style="margin-bottom:24px">
+    <div class="sg-lbl">ACCOUNT OVERVIEW</div>
+    <div class="stat-grid">
+      ${sc('Accounts',ctr(accN,'int','ov_acc'))}
+      ${sc('Records',ctr(recN,'int','ov_rec'))}
+      ${sc('Transactions',ctr(txN,'int','ov_tx'))}
+      ${sc('Net P&amp;L (All)',`<span class="${allPnl>=0?'pos':'neg'}">${ctr(allPnl,'pnl','ov_pnl')}</span>`)}
+      ${sc('Active Since',since?F.date(since):'<span style="color:var(--mute)">—</span>')}
+    </div>
+  </div>
 
   <div class="settings-cols">
     <div class="settings-box e1">
@@ -1434,7 +1473,7 @@ ${(()=>{
   },
 
   // ── Actions ───────────────────────────────────────────────────────────────
-  go(v){this.s.view=v;this.render()},
+  go(v){this.s.view=v;this.render();this.refresh()},
   sort(c){if(this.s.sort.col===c)this.s.sort.dir=this.s.sort.dir==='asc'?'desc':'asc';else{this.s.sort.col=c;this.s.sort.dir='desc'};this.render()},
   setF(k,v){this.s.filter[k]=v;this.render()},
 
@@ -1749,6 +1788,38 @@ ${(()=>{
       this.s.view==='accounts'?this.vAcc():
       this.s.view==='settings'?this.vSettings():
       this.vDash();
+    this.animateCounters();
+  },
+
+  // ── Live counters: count-up entrance + tick-flash on change ───────────────
+  animateCounters(){
+    const root=document.getElementById('root');if(!root)return;
+    const freshView=this._cntView!==this.s.view;   // re-entering a view replays the count-up
+    this._cntView=this.s.view;
+    if(freshView)this._prevCnt={};
+    const cnts=root.querySelectorAll('.cnt[data-count]');
+    if(!cnts.length)return;
+    const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+    const prev=this._prevCnt||{},next={};
+    cnts.forEach(el=>{
+      const to=parseFloat(el.dataset.count)||0,fmt=el.dataset.fmt,k=el.dataset.k||fmt;
+      const fn=CFMT[fmt]||CFMT.num2;
+      const had=Object.prototype.hasOwnProperty.call(prev,k);
+      const from=had?prev[k]:0;
+      next[k]=to;
+      if(reduce||from===to){el.textContent=fn(to);return;}
+      if(had)this._flash(el,to>from);              // only flash a real change, not the first paint
+      const dur=had?420:700,t0=performance.now(),ease=x=>1-Math.pow(1-x,4);
+      const step=now=>{const p=Math.min(1,(now-t0)/dur);el.textContent=fn(from+(to-from)*ease(p));if(p<1)requestAnimationFrame(step);else el.textContent=fn(to);};
+      requestAnimationFrame(step);
+    });
+    this._prevCnt=next;
+  },
+  _flash(el,up){
+    const host=el.closest('.stat')||el;
+    host.classList.remove('flash-up','flash-dn');void host.offsetWidth;
+    host.classList.add(up?'flash-up':'flash-dn');
+    setTimeout(()=>host.classList.remove('flash-up','flash-dn'),720);
   },
 
   // ── Auth ──────────────────────────────────────────────────────────────────
