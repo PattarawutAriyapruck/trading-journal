@@ -185,6 +185,7 @@ textarea{resize:vertical;min-height:72px}
 .e4{animation:fadeUp .38s .18s ease-out both}
 .e5{animation:fadeUp .38s .24s ease-out both}
 .e6{animation:fadeUp .38s .30s ease-out both}
+.e7{animation:fadeUp .38s .36s ease-out both}
 
 /* FOOTER */
 .footer{border-top:1px solid var(--bd);padding:16px 20px;display:flex;align-items:center;gap:8px;color:var(--mute);font-size:11px;letter-spacing:.5px}
@@ -195,7 +196,7 @@ textarea{resize:vertical;min-height:72px}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.09);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:rgba(0,255,136,.25)}
 
-@media(prefers-reduced-motion:reduce){.e1,.e2,.e3,.e4,.e5,.e6{animation:none}.dot{animation:none}}
+@media(prefers-reduced-motion:reduce){.e1,.e2,.e3,.e4,.e5,.e6,.e7{animation:none}.dot{animation:none}}
 @media(max-width:600px){.wrap{padding:20px 14px}.stat-val{font-size:18px}.nav-tab{padding:6px 9px;font-size:11px}}
 
 /* CALENDAR */
@@ -882,6 +883,22 @@ const A={
       avgW,avgL,pf,mw,ml,streak,cumData};
   },
 
+  stratBreakdown(recs){
+    const groups={};
+    recs.forEach(r=>{const k=r.strat||'';if(!groups[k])groups[k]=[];groups[k].push(r)});
+    const rows=Object.entries(groups).map(([strat,rs])=>{
+      const dayMap={};
+      rs.forEach(r=>{if(!dayMap[r.date])dayMap[r.date]=0;dayMap[r.date]+=r.pnl});
+      const days=Object.values(dayMap),n=days.length;
+      const wins=days.filter(p=>p>0).length;
+      const totalPnl=days.reduce((s,p)=>s+p,0);
+      return{strat,n,wr:n?(wins/n)*100:0,avgPnl:n?totalPnl/n:0,totalPnl};
+    });
+    const tagged=rows.filter(r=>r.strat!=='').sort((a,b)=>b.totalPnl-a.totalPnl);
+    const untagged=rows.filter(r=>r.strat==='');
+    return[...tagged,...untagged];
+  },
+
   // ── Charts ────────────────────────────────────────────────────────────────
   lineChart(data){
     this._ld=data;
@@ -1037,7 +1054,56 @@ ${data.map((d,i)=>{const h=Math.max(1,(Math.abs(d.pnl)/mx)*(cH/2)),x=i*(cW/data.
   <div class="chart-card"><div class="chart-ttl">DAILY P&amp;L</div>${this.barChart(s.cumData)}</div>
 </div>
 
-<div class="e6">
+${(()=>{
+  if(!s.recs.length)return'';
+  const bd=this.stratBreakdown(s.recs);
+  if(!bd.length)return'';
+  const taggedCount=bd.filter(r=>r.strat!=='').length;
+  const maxAbs=Math.max(...bd.map(r=>Math.abs(r.totalPnl)),1);
+  const rows=bd.map(r=>{
+    const pct=(Math.abs(r.totalPnl)/maxAbs*100).toFixed(1);
+    const barColor=r.totalPnl>=0?'var(--p)':'var(--r)';
+    const wrColor=r.wr>=50?'var(--p)':r.wr>0?'var(--r)':'var(--dim)';
+    const avgColor=r.avgPnl>=0?'var(--p)':'var(--r)';
+    const isTagged=r.strat!=='';
+    const rowAttrs=isTagged?`style="cursor:pointer" title="Click to filter records" onclick="A.setF('strat','${esc(r.strat)}');A.go('records')"`:'' ;
+    const stratCell=isTagged
+      ?`<span class="badge bw">${esc(r.strat)}</span>`
+      :`<span style="color:var(--dim);font-size:12px">— Untagged</span>`;
+    return`<tr ${rowAttrs}>
+      <td>${stratCell}</td>
+      <td style="text-align:center;font-family:var(--mono);font-size:12px">${r.n}</td>
+      <td style="text-align:center;font-family:var(--mono);font-size:12px;color:${wrColor}">${F.pct(r.wr)}</td>
+      <td style="text-align:right;font-family:var(--mono);font-size:12px;color:${avgColor}">${F.pnl(r.avgPnl)}</td>
+      <td style="min-width:180px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;height:4px;background:var(--s3);border-radius:2px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${barColor}"></div>
+          </div>
+          <span style="font-family:var(--mono);font-size:12px;color:${barColor};min-width:64px;text-align:right">${F.pnl(r.totalPnl)}</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  return`<div class="sg e6">
+  <div class="sec-hd">
+    <div class="sec-ttl">PERFORMANCE BY STRATEGY</div>
+    <span style="font-size:11px;color:var(--dim)">${taggedCount} strateg${taggedCount===1?'y':'ies'}</span>
+  </div>
+  <div class="tbl-wrap"><table>
+    <thead><tr>
+      <th>STRATEGY</th>
+      <th style="text-align:center">DAYS</th>
+      <th style="text-align:center">WIN RATE</th>
+      <th style="text-align:right">AVG P&amp;L</th>
+      <th style="min-width:180px">TOTAL P&amp;L</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>
+</div>`;
+})()}
+
+<div class="e7">
   <div class="sec-hd"><div class="sec-ttl">RECENT RECORDS</div><button class="btn btn-sm" onclick="A.go('records')">View All →</button></div>
   ${!s.recs.length?`<div class="empty">
     <div class="empty-ico">📊</div>
