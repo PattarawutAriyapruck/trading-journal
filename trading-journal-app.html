@@ -17,11 +17,11 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --p:#00ff88;--p15:rgba(0,255,136,.15);--p30:rgba(0,255,136,.3);
+  --p:#00ff88;--p-rgb:0,255,136;--p15:rgba(var(--p-rgb),.15);--p30:rgba(var(--p-rgb),.3);
   --r:#ff3366;--r15:rgba(255,51,102,.15);--r30:rgba(255,51,102,.3);
   --a:#ffaa00;--a15:rgba(255,170,0,.15);
   --bg:#030303;--s1:rgba(255,255,255,.025);--s2:rgba(255,255,255,.05);--s3:rgba(255,255,255,.08);
-  --bd:rgba(255,255,255,.07);--bdp:rgba(0,255,136,.18);
+  --bd:rgba(255,255,255,.07);--bdp:rgba(var(--p-rgb),.18);
   --ink:#e0e0e0;--dim:#666;--mute:#2a2a2a;
   --ui:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;
   --rad:3px
@@ -41,7 +41,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .nav-acc{background:var(--s2);border:1px solid var(--bd);color:var(--ink);font-family:var(--mono);font-size:12px;padding:5px 10px;border-radius:var(--rad);cursor:pointer;max-width:150px}
 .nav-acc:focus{outline:1px solid var(--p30);border-color:var(--p30)}
 .nav-add{margin-left:auto;padding:6px 14px;border:1px solid var(--p30);background:transparent;color:var(--p);font-family:var(--ui);font-size:12px;font-weight:600;letter-spacing:.05em;border-radius:var(--rad);cursor:pointer;transition:all .15s;flex-shrink:0}
-.nav-add:hover{background:var(--p15);border-color:var(--p);box-shadow:0 0 14px rgba(0,255,136,.15)}
+.nav-add:hover{background:var(--p15);border-color:var(--p);box-shadow:0 0 14px rgba(var(--p-rgb),.15)}
 
 /* LAYOUT */
 .main{padding-top:calc(56px + env(safe-area-inset-top,0px));min-height:100vh}
@@ -57,14 +57,14 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .stat-val{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1}
 
 /* CHART TOOLTIP */
-#ctip{position:fixed;pointer-events:none;z-index:5000;display:none;background:rgba(3,3,3,.96);border:1px solid rgba(0,255,136,.25);border-radius:3px;padding:10px 13px;font-family:'JetBrains Mono',monospace;font-size:12px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.6)}
-rect.bp{fill:rgba(0,255,136,.62)}rect.bp:hover{fill:rgba(0,255,136,.92)}
+#ctip{position:fixed;pointer-events:none;z-index:5000;display:none;background:rgba(3,3,3,.96);border:1px solid rgba(var(--p-rgb),.25);border-radius:3px;padding:10px 13px;font-family:'JetBrains Mono',monospace;font-size:12px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.6)}
+rect.bp{fill:rgba(var(--p-rgb),.62)}rect.bp:hover{fill:rgba(var(--p-rgb),.92)}
 rect.bn{fill:rgba(255,51,102,.62)}rect.bn:hover{fill:rgba(255,51,102,.92)}
 
 /* BULK SELECT */
-.bulk-bar{display:flex;align-items:center;gap:10px;padding:9px 14px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.2);border-radius:var(--rad);margin-bottom:10px;flex-wrap:wrap}
+.bulk-bar{display:flex;align-items:center;gap:10px;padding:9px 14px;background:rgba(var(--p-rgb),.06);border:1px solid rgba(var(--p-rgb),.2);border-radius:var(--rad);margin-bottom:10px;flex-wrap:wrap}
 .bulk-count{font-size:13px;font-weight:600;color:var(--p);flex:1;font-family:var(--mono)}
-tr.sel-row{background:rgba(0,255,136,.04)!important}
+tr.sel-row{background:rgba(var(--p-rgb),.04)!important}
 input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--p);flex-shrink:0}
 th.cb-col,td.cb-col{width:36px;padding-left:14px;padding-right:4px}
 
@@ -91,21 +91,21 @@ tbody tr:hover .td-act{opacity:1}
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border:1px solid var(--p30);background:transparent;color:var(--p);font-family:var(--ui);font-size:13px;font-weight:600;letter-spacing:.04em;border-radius:var(--rad);cursor:pointer;transition:all .15s}
-.btn:hover{background:var(--p15);border-color:var(--p);box-shadow:0 0 16px rgba(0,255,136,.12)}
+.btn:hover{background:var(--p15);border-color:var(--p);box-shadow:0 0 16px rgba(var(--p-rgb),.12)}
 .btn-sm{padding:4px 10px;font-size:11px}
 .btn-danger{border-color:var(--r30);color:var(--r)}
 .btn-danger:hover{background:var(--r15);border-color:var(--r);box-shadow:0 0 14px rgba(255,51,102,.12)}
 .btn-ghost{border-color:var(--bd);color:var(--dim)}
 .btn-ghost:hover{border-color:var(--bdp);color:var(--ink);background:var(--s2)}
 .btn-deposit{border-color:var(--p30);color:var(--p)}
-.btn-deposit:hover{background:var(--p15);border-color:var(--p);box-shadow:0 0 14px rgba(0,255,136,.1)}
+.btn-deposit:hover{background:var(--p15);border-color:var(--p);box-shadow:0 0 14px rgba(var(--p-rgb),.1)}
 .btn-withdraw{border-color:var(--a15);color:var(--a)}
 .btn-withdraw:hover{background:var(--a15);border-color:var(--a);box-shadow:0 0 14px rgba(255,170,0,.1)}
 .btn-icon{padding:4px 8px;font-size:14px;line-height:1}
 
 /* INPUTS */
 input,select,textarea{background:var(--s2);border:1px solid var(--bd);color:var(--ink);font-family:var(--ui);font-size:13px;padding:9px 12px;border-radius:var(--rad);width:100%;transition:border-color .15s,box-shadow .15s;-webkit-appearance:none}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--p30);box-shadow:0 0 0 3px rgba(0,255,136,.06)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--p30);box-shadow:0 0 0 3px rgba(var(--p-rgb),.06)}
 input[type="number"]{font-family:var(--mono)}
 input[type="date"]{color-scheme:dark}
 select option{background:#0e0e0e}
@@ -155,11 +155,16 @@ textarea{resize:vertical;min-height:72px}
 .tag-del:hover{color:var(--r)}
 .add-row{display:flex;gap:8px}
 .add-row input{flex:1}
+.theme-row{display:flex;flex-wrap:wrap;gap:10px}
+.theme-sw{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--rad);cursor:pointer;color:var(--dim);font-family:var(--ui);font-size:12px;font-weight:600;letter-spacing:.04em;transition:border-color .15s,color .15s}
+.theme-sw:hover{border-color:var(--bdp);color:var(--ink)}
+.theme-sw.active{border-color:var(--sw);color:var(--ink)}
+.theme-dot{width:12px;height:12px;border-radius:50%;background:var(--sw);box-shadow:0 0 8px var(--sw)}
 .empty-tags{font-size:12px;color:var(--mute);font-style:italic;padding:6px 0}
 
 /* BADGES */
 .badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:2px;font-family:var(--mono)}
-.bw{background:rgba(0,255,136,.08);color:var(--p);border:1px solid rgba(0,255,136,.18)}
+.bw{background:rgba(var(--p-rgb),.08);color:var(--p);border:1px solid rgba(var(--p-rgb),.18)}
 .bl{background:rgba(255,51,102,.08);color:var(--r);border:1px solid rgba(255,51,102,.18)}
 .ba{background:rgba(255,170,0,.08);color:var(--a);border:1px solid rgba(255,170,0,.18)}
 
@@ -191,7 +196,7 @@ textarea{resize:vertical;min-height:72px}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.09);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:rgba(0,255,136,.25)}
+::-webkit-scrollbar-thumb:hover{background:rgba(var(--p-rgb),.25)}
 
 /* TICK FLASH — live value change */
 @keyframes flashUp{0%{background:var(--p15);box-shadow:inset 0 0 0 1px var(--p30)}100%{background:var(--s1);box-shadow:none}}
@@ -222,7 +227,7 @@ textarea{resize:vertical;min-height:72px}
 .cal-empty{background:transparent!important;border-color:transparent!important;pointer-events:none}
 .cal-cell.cal-win{cursor:crosshair;border-bottom-width:2px}
 .cal-cell.cal-loss{cursor:crosshair;border-bottom-width:2px}
-.cal-cell.cal-win:hover{transform:translateY(-2px);box-shadow:0 4px 24px rgba(0,255,136,.13)}
+.cal-cell.cal-win:hover{transform:translateY(-2px);box-shadow:0 4px 24px rgba(var(--p-rgb),.13)}
 .cal-cell.cal-loss:hover{transform:translateY(-2px);box-shadow:0 4px 24px rgba(255,51,102,.13)}
 .cal-day-num{font-family:var(--mono);font-size:10px;color:var(--dim);font-weight:500;line-height:1.4;flex-shrink:0}
 .cal-today-num{color:var(--p);background:var(--p15);border:1px solid var(--p30);border-radius:3px;padding:1px 5px;display:inline-block}
@@ -235,7 +240,7 @@ textarea{resize:vertical;min-height:72px}
 .pt-card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rad);padding:18px 20px;margin-bottom:10px;transition:border-color .2s,box-shadow .2s}
 .pt-card:hover{border-color:var(--bdp)}
 .pt-card:last-child{margin-bottom:0}
-.pt-achieved{border-color:rgba(0,255,136,.3)!important;box-shadow:0 0 0 1px rgba(0,255,136,.07)}
+.pt-achieved{border-color:rgba(var(--p-rgb),.3)!important;box-shadow:0 0 0 1px rgba(var(--p-rgb),.07)}
 .pt-overdue{border-color:rgba(255,51,102,.3)!important}
 .pt-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
 .pt-info{flex:1;min-width:0}
@@ -254,7 +259,7 @@ textarea{resize:vertical;min-height:72px}
 .dp-wrap{width:100%}
 .dp-trigger{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bd);color:var(--ink);font-family:var(--mono);font-size:13px;padding:9px 12px;border-radius:var(--rad);cursor:pointer;user-select:none;transition:border-color .15s,box-shadow .15s;width:100%}
 .dp-trigger:hover{border-color:var(--p30)}
-.dp-trigger.dp-open{border-color:var(--p30);box-shadow:0 0 0 3px rgba(0,255,136,.06)}
+.dp-trigger.dp-open{border-color:var(--p30);box-shadow:0 0 0 3px rgba(var(--p-rgb),.06)}
 .dp-lbl{flex:1}.dp-lbl.dp-ph{color:var(--dim)}
 .dp-ico{font-size:10px;opacity:.35;flex-shrink:0}
 #dpPanel{position:fixed;z-index:3500;background:rgba(3,3,3,.98);border:1px solid var(--bdp);border-radius:var(--rad);padding:14px 12px;width:252px;box-shadow:0 8px 40px rgba(0,0,0,.85);animation:min .15s ease-out;display:none}
@@ -273,7 +278,7 @@ textarea{resize:vertical;min-height:72px}
 /* CUSTOM SELECT */
 .cs-trigger{display:inline-flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bd);color:var(--ink);font-family:var(--ui);font-size:13px;padding:9px 12px;border-radius:var(--rad);cursor:pointer;user-select:none;transition:border-color .15s,box-shadow .15s;width:100%}
 .cs-trigger:hover{border-color:var(--p30)}
-.cs-trigger.cs-open{border-color:var(--p30);box-shadow:0 0 0 3px rgba(0,255,136,.06)}
+.cs-trigger.cs-open{border-color:var(--p30);box-shadow:0 0 0 3px rgba(var(--p-rgb),.06)}
 .cs-val{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cs-ico{font-size:10px;opacity:.35;flex-shrink:0;transition:transform .15s;line-height:1}
 .cs-trigger.cs-open .cs-ico{transform:rotate(180deg)}
@@ -639,6 +644,8 @@ const F={
 };
 // Counter format map — shared by count-up wrappers (ctr) and animateCounters()
 const CFMT={pnl:F.pnl,'$':F.$,pct:F.pct,int:v=>String(Math.round(v)),num2:v=>(+v).toFixed(2),sign:v=>{const n=Math.round(v);return(n>0?'+':'')+n}};
+// Accent-color themes — only the primary (green) hue changes; loss-red / warning-amber stay fixed
+const THEMES={green:{hex:'#00ff88',rgb:'0,255,136'},cyan:{hex:'#00e5ff',rgb:'0,229,255'},blue:{hex:'#3b9eff',rgb:'59,158,255'},purple:{hex:'#b388ff',rgb:'179,136,255'}};
 const today=()=>new Date().toISOString().split('T')[0];
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -979,17 +986,17 @@ const A={
     const xStp=Math.max(1,Math.ceil(data.length/7));
     const xLb=data.filter((_,i)=>i%xStp===0||i===data.length-1).map((d,_,__,i=data.indexOf(d))=>({x:xS(i),lbl:F.ds(d.date)}));
     return`<svg id="lsvg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">
-<defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00ff88" stop-opacity=".22"/><stop offset="100%" stop-color="#00ff88" stop-opacity=".01"/></linearGradient></defs>
+<defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" style="stop-color:var(--p);stop-opacity:.22"/><stop offset="100%" style="stop-color:var(--p);stop-opacity:.01"/></linearGradient></defs>
 <g transform="translate(${pd.l},${pd.t})">
 ${yTk.map(t=>`<line x1="0" y1="${t.y.toFixed(1)}" x2="${cW}" y2="${t.y.toFixed(1)}" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
 <text x="-7" y="${(t.y+4).toFixed(1)}" text-anchor="end" fill="#555" font-size="10" font-family="JetBrains Mono,monospace">${t.v>=0?'+':''}${Math.abs(t.v)>=1000?(t.v/1000).toFixed(1)+'K':t.v.toFixed(0)}</text>`).join('')}
 <line x1="0" y1="${zY.toFixed(1)}" x2="${cW}" y2="${zY.toFixed(1)}" stroke="rgba(255,255,255,.13)" stroke-width="1" stroke-dasharray="4,4"/>
 <path d="${aD}" fill="url(#lg)"/>
-<path d="${pD}" fill="none" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-${data.map((d,i)=>`<circle cx="${xS(i).toFixed(1)}" cy="${yS(d.cum).toFixed(1)}" r="2.5" fill="${d.pnl>=0?'#00ff88':'#ff3366'}" style="pointer-events:none"/>`).join('')}
+<path d="${pD}" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--p)"/>
+${data.map((d,i)=>`<circle cx="${xS(i).toFixed(1)}" cy="${yS(d.cum).toFixed(1)}" r="2.5" style="fill:${d.pnl>=0?'var(--p)':'#ff3366'};pointer-events:none"/>`).join('')}
 ${xLb.map(l=>`<text x="${l.x.toFixed(1)}" y="${cH+18}" text-anchor="middle" fill="#444" font-size="10" font-family="JetBrains Mono,monospace" style="pointer-events:none">${l.lbl}</text>`).join('')}
-<line id="lcr" x1="0" y1="0" x2="0" y2="${cH}" stroke="rgba(0,255,136,.2)" stroke-width="1" stroke-dasharray="3,3" opacity="0" style="pointer-events:none"/>
-<circle id="lhl" cx="0" cy="0" r="5" fill="none" stroke="#00ff88" stroke-width="1.5" opacity="0" style="pointer-events:none"/>
+<line id="lcr" x1="0" y1="0" x2="0" y2="${cH}" stroke-width="1" stroke-dasharray="3,3" opacity="0" style="stroke:rgba(var(--p-rgb),.2);pointer-events:none"/>
+<circle id="lhl" cx="0" cy="0" r="5" fill="none" stroke-width="1.5" opacity="0" style="stroke:var(--p);pointer-events:none"/>
 <rect x="0" y="0" width="${cW}" height="${cH}" fill="transparent" style="cursor:crosshair" onmousemove="A.onLH(event)" onmouseleave="A.tipOff()"/>
 </g></svg>`;
   },
@@ -1032,8 +1039,8 @@ ${data.map((d,i)=>{const h=Math.max(1,(Math.abs(d.pnl)/mx)*(cH/2)),x=i*(cW/data.
       const totalDays=Math.max(1,Math.ceil((tDate-sDate)/86400000));
       const elapsedDays=Math.max(0,Math.min(totalDays,Math.ceil((tNow-sDate)/86400000)));
       const pacePct=(elapsedDays/totalDays)*100;
-      const barColor=achieved?'#00ff88':isOverdue?'#ff3366':pct>=pacePct-5?'#00ff88':pct>=pacePct-20?'#ffaa00':'#ff3366';
-      const barGlow=achieved?'rgba(0,255,136,.45)':isOverdue?'rgba(255,51,102,.45)':pct>=pacePct-5?'rgba(0,255,136,.35)':pct>=pacePct-20?'rgba(255,170,0,.35)':'rgba(255,51,102,.35)';
+      const barColor=achieved?'var(--p)':isOverdue?'#ff3366':pct>=pacePct-5?'var(--p)':pct>=pacePct-20?'#ffaa00':'#ff3366';
+      const barGlow=achieved?'rgba(var(--p-rgb),.45)':isOverdue?'rgba(255,51,102,.45)':pct>=pacePct-5?'rgba(var(--p-rgb),.35)':pct>=pacePct-20?'rgba(255,170,0,.35)':'rgba(255,51,102,.35)';
       const daysColor=achieved?'var(--p)':isOverdue?'var(--r)':daysLeft<=7?'var(--a)':'var(--dim)';
       const daysText=achieved?'Achieved!':isOverdue?Math.abs(daysLeft)+' days overdue':daysLeft===0?'Due today':daysLeft+' days left';
       const remaining=Math.max(0,t.target-s.tot);
@@ -1305,6 +1312,14 @@ ${(()=>{
     </div>
   </div>
 
+  <div class="settings-box e1" style="margin-bottom:24px">
+    <div class="settings-box-title">APPEARANCE · ACCENT COLOR</div>
+    <div class="theme-row">
+      ${[['green','Green','#00ff88'],['cyan','Cyan','#00e5ff'],['blue','Blue','#3b9eff'],['purple','Purple','#b388ff']].map(([id,lbl,hex])=>`<button class="theme-sw${(this._theme||'green')===id?' active':''}" style="--sw:${hex}" onclick="A.setTheme('${id}')"><span class="theme-dot"></span>${lbl}</button>`).join('')}
+    </div>
+    <div class="flbl-hint" style="margin-top:12px">Recolors the primary accent across the app. Loss stays red. Saved on this device.</div>
+  </div>
+
   <div class="settings-cols">
     <div class="settings-box e1">
       <div class="settings-box-title">STRATEGIES</div>
@@ -1460,7 +1475,7 @@ ${(()=>{
     if(lhl){lhl.setAttribute('cx',xp.toFixed(1));lhl.setAttribute('cy',yp.toFixed(1));lhl.setAttribute('opacity','1')}
     this.tipOn(evt.clientX,evt.clientY,
       '<div style="color:#888;font-size:10px;margin-bottom:5px;letter-spacing:.5px">'+F.date(d.date)+'</div>'+
-      '<div style="color:'+(d.pnl>=0?'#00ff88':'#ff3366')+';margin-bottom:3px">Day &nbsp;&nbsp;'+F.pnl(d.pnl)+'</div>'+
+      '<div style="color:'+(d.pnl>=0?'var(--p)':'#ff3366')+';margin-bottom:3px">Day &nbsp;&nbsp;'+F.pnl(d.pnl)+'</div>'+
       '<div style="color:#666">Cum &nbsp;'+F.pnl(d.cum)+'</div>'
     );
   },
@@ -1468,12 +1483,25 @@ ${(()=>{
     const d=this._bd&&this._bd[idx];if(!d)return;
     this.tipOn(evt.clientX,evt.clientY,
       '<div style="color:#888;font-size:10px;margin-bottom:5px;letter-spacing:.5px">'+F.date(d.date)+'</div>'+
-      '<div style="color:'+(d.pnl>=0?'#00ff88':'#ff3366')+'">P&L &nbsp;&nbsp;'+F.pnl(d.pnl)+'</div>'
+      '<div style="color:'+(d.pnl>=0?'var(--p)':'#ff3366')+'">P&L &nbsp;&nbsp;'+F.pnl(d.pnl)+'</div>'
     );
   },
 
   // ── Actions ───────────────────────────────────────────────────────────────
   go(v){this.s.view=v;this.render();this.refresh()},
+
+  // ── Accent theme ───────────────────────────────────────────────────────────
+  applyTheme(name){
+    const t=THEMES[name]||THEMES.green;
+    this._theme=THEMES[name]?name:'green';
+    document.documentElement.style.setProperty('--p',t.hex);
+    document.documentElement.style.setProperty('--p-rgb',t.rgb);
+  },
+  setTheme(name){
+    this.applyTheme(name);
+    try{localStorage.setItem('tj_theme',name)}catch(e){}
+    this.render();
+  },
   sort(c){if(this.s.sort.col===c)this.s.sort.dir=this.s.sort.dir==='asc'?'desc':'asc';else{this.s.sort.col=c;this.s.sort.dir='desc'};this.render()},
   setF(k,v){this.s.filter[k]=v;this.render()},
 
@@ -1640,7 +1668,7 @@ ${(()=>{
     const recs=this.s.records.filter(r=>r.accId===this.s.active&&r.date===ds);
     if(!recs.length)return;
     const pnl=recs.reduce((s,r)=>s+r.pnl,0);
-    const col=pnl>=0?'#00ff88':'#ff3366';
+    const col=pnl>=0?'var(--p)':'#ff3366';
     let html=`<div style="color:#888;font-size:10px;margin-bottom:5px;letter-spacing:.5px">${F.date(ds)}</div>`;
     html+=`<div style="color:${col};font-weight:700;margin-bottom:${recs.length>1?4:0}px">P&L &nbsp;&nbsp;${F.pnl(pnl)}</div>`;
     if(recs.length>1){
@@ -1683,7 +1711,7 @@ ${(()=>{
       const numEl=`<div class="cal-day-num${isToday?' cal-today-num':''}">${d}</div>`;
       if(!v)return`<div class="cal-cell">${numEl}</div>`;
       const inten=Math.min(1,(Math.abs(v.pnl)/maxAbs)*.7+.15);
-      const isW=v.pnl>=0,rgb=isW?'0,255,136':'255,51,102';
+      const isW=v.pnl>=0,rgb=isW?'var(--p-rgb)':'255,51,102';
       const bg=(inten*.16).toFixed(3),bd=(inten*.45).toFixed(3);
       const pnlEl=`<div class="cal-pnl ${isW?'pos':'neg'}">${F.pnl(v.pnl)}</div>`;
       const cntEl=v.count>1?`<div class="cal-recs-lbl">${v.count} TRADES</div>`:'';
@@ -1872,6 +1900,7 @@ ${(()=>{
 
   async init(){
     DP.init();CS.init();
+    this.applyTheme(localStorage.getItem('tj_theme')||'green');
     document.querySelectorAll('.mbk').forEach(el=>el.addEventListener('click',e=>{if(e.target===el){el.classList.remove('open');DP.close();CS.close();}}));
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.mbk.open').forEach(el=>el.classList.remove('open'));DP.close();CS.close();}});
     // Generate apple-touch-icon
