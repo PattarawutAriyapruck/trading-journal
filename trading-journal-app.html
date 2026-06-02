@@ -30,7 +30,7 @@ html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--ui
 body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:9999}
 
 /* NAV */
-.nav{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(3,3,3,.96);border-bottom:1px solid var(--bdp);backdrop-filter:blur(20px);display:flex;align-items:center;padding:0 20px;gap:16px;z-index:1000}
+.nav{position:fixed;top:0;left:0;right:0;height:calc(56px + env(safe-area-inset-top,0px));background:rgba(3,3,3,.96);border-bottom:1px solid var(--bdp);backdrop-filter:blur(20px);display:flex;align-items:center;padding:env(safe-area-inset-top,0px) 20px 0;gap:16px;z-index:1000}
 .nav-logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px;letter-spacing:-.02em;white-space:nowrap;flex-shrink:0}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--p);box-shadow:0 0 6px var(--p);animation:pulse-dot 2.4s ease-in-out infinite;flex-shrink:0}
 @keyframes pulse-dot{0%,100%{opacity:1;box-shadow:0 0 6px var(--p)}50%{opacity:.5;box-shadow:0 0 14px var(--p)}}
@@ -44,7 +44,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .nav-add:hover{background:var(--p15);border-color:var(--p);box-shadow:0 0 14px rgba(0,255,136,.15)}
 
 /* LAYOUT */
-.main{padding-top:56px;min-height:100vh}
+.main{padding-top:calc(56px + env(safe-area-inset-top,0px));min-height:100vh}
 .wrap{max-width:1280px;margin:0 auto;padding:32px 20px}
 
 /* STATS */
@@ -296,7 +296,7 @@ textarea{resize:vertical;min-height:72px}
 /* ─── Mobile ≤ 767px ─────────────────────────── */
 @media(max-width:767px){
   /* Nav: hide tabs, compact remaining controls */
-  .nav{padding:0 max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));gap:8px}
+  .nav{padding:env(safe-area-inset-top,0px) max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));gap:8px}
   .nav-logo{font-size:13px;gap:6px}
   .nav-logo-txt{display:none}
   .nav-tabs{display:none}
@@ -391,7 +391,7 @@ textarea{resize:vertical;min-height:72px}
 
 /* ─── Tablet 768–1023px ──────────────────────── */
 @media(min-width:768px)and(max-width:1023px){
-  .nav{padding:0 16px;gap:10px}
+  .nav{padding:env(safe-area-inset-top,0px) 16px 0;gap:10px}
   .nav-tab{padding:6px 9px;font-size:11px}
   .nav-acc-cs{max-width:130px}
   .nav-add{padding:6px 12px;font-size:12px}
