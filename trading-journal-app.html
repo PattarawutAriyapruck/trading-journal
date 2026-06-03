@@ -22,7 +22,7 @@
   --a:#ffaa00;--a15:rgba(255,170,0,.15);
   --bg:#030303;--s1:rgba(255,255,255,.025);--s2:rgba(255,255,255,.05);--s3:rgba(255,255,255,.08);
   --bd:rgba(255,255,255,.07);--bdp:rgba(var(--p-rgb),.18);
-  --ink:#e0e0e0;--dim:#666;--mute:#2a2a2a;
+  --ink:#e0e0e0;--dim:#666;--mute:#444;
   --ui:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;
   --rad:3px
 }
@@ -115,6 +115,8 @@ textarea{resize:vertical;min-height:72px}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:500px){.frow{grid-template-columns:1fr}}
 .flbl-hint{font-size:10px;color:var(--dim);margin-top:4px}
+.field-err{font-size:11px;color:var(--r);margin-top:4px;display:none}
+.dp-trigger.dp-invalid{border-color:var(--r)!important}
 .flbl-hint a{color:var(--p);cursor:pointer;text-decoration:none}
 .flbl-hint a:hover{text-decoration:underline}
 
@@ -440,6 +442,11 @@ textarea{resize:vertical;min-height:72px}
   ::-webkit-scrollbar{width:2px;height:2px}
 }
 
+/* TOAST */
+#toast{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(20px);background:rgba(20,20,20,.97);border:1px solid var(--bd);border-radius:var(--rad);padding:10px 18px;font-size:13px;font-weight:500;color:var(--ink);white-space:nowrap;z-index:9000;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.toast-err{border-color:var(--r30);color:var(--r)}
+
 /* ── LOGIN SCREEN ─────────────────────────────────────────────────────── */
 .ls{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9000;padding:20px}
 .lb{width:100%;max-width:380px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--rad);padding:32px}
@@ -464,13 +471,13 @@ textarea{resize:vertical;min-height:72px}
     </div>
     <form id="loginForm" onsubmit="A.doLogin(event)">
       <div class="fg"><label class="flbl">Email</label><input type="email" id="loginEmail" placeholder="you@example.com" required autocomplete="username"></div>
-      <div class="fg"><label class="flbl">Password</label><input type="password" id="loginPass" placeholder="••••••••" required autocomplete="current-password"></div>
+      <div class="fg"><label class="flbl">Password</label><div style="position:relative"><input type="password" id="loginPass" placeholder="••••••••" required autocomplete="current-password" style="padding-right:40px"><button type="button" onclick="A.togglePw('loginPass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;line-height:1;padding:2px" aria-label="Show password">👁</button></div></div>
       <div id="loginErr" class="lb-err"></div>
       <button type="submit" class="btn" style="width:100%" id="loginBtn">Sign In</button>
     </form>
     <form id="regForm" onsubmit="A.doRegister(event)" style="display:none">
       <div class="fg"><label class="flbl">Email</label><input type="email" id="regEmail" placeholder="you@example.com" required autocomplete="username"></div>
-      <div class="fg"><label class="flbl">Password <span style="font-weight:400;color:var(--dim)">(min 6 chars)</span></label><input type="password" id="regPass" placeholder="••••••••" required minlength="6" autocomplete="new-password"></div>
+      <div class="fg"><label class="flbl">Password <span style="font-weight:400;color:var(--dim)">(min 6 chars)</span></label><div style="position:relative"><input type="password" id="regPass" placeholder="••••••••" required minlength="6" autocomplete="new-password" style="padding-right:40px"><button type="button" onclick="A.togglePw('regPass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;line-height:1;padding:2px" aria-label="Show password">👁</button></div></div>
       <div id="regErr" class="lb-err"></div>
       <button type="submit" class="btn" style="width:100%" id="regBtn">Create Account</button>
     </form>
@@ -544,7 +551,7 @@ textarea{resize:vertical;min-height:72px}
     <div class="mhd"><div class="mttl" id="recTtl">ADD RECORD</div><button class="mx" onclick="A.close('recMod')">×</button></div>
     <form onsubmit="A.submitRec(event)">
       <div class="frow">
-        <div class="fg"><label class="flbl">Date</label><div class="dp-wrap"><div class="dp-trigger" id="dpT_rDate" onclick="DP.open('dpT_rDate','rDate')"><span class="dp-lbl dp-ph">Select date…</span><span class="dp-ico">▾</span></div></div><input type="hidden" id="rDate"></div>
+        <div class="fg"><label class="flbl">Date</label><div class="dp-wrap"><div class="dp-trigger" id="dpT_rDate" onclick="DP.open('dpT_rDate','rDate')"><span class="dp-lbl dp-ph">Select date…</span><span class="dp-ico">▾</span></div></div><input type="hidden" id="rDate"><div class="field-err" id="rDateErr">Please select a date.</div></div>
         <div class="fg"><label class="flbl">P&amp;L ($)</label><input type="number" id="rPnl" step="0.01" placeholder="450 or -120" required></div>
       </div>
       <div class="frow">
@@ -621,7 +628,7 @@ textarea{resize:vertical;min-height:72px}
     <div class="mhd"><div class="mttl" id="targetTtl">NEW PROFIT TARGET</div><button class="mx" onclick="A.close('targetMod')">×</button></div>
     <form onsubmit="A.submitTarget(event)">
       <div class="fg"><label class="flbl">Target P&amp;L ($)</label><input type="number" id="tTarget" step="0.01" min="0.01" placeholder="e.g. 5000" required></div>
-      <div class="fg"><label class="flbl">Deadline</label><div class="dp-wrap"><div class="dp-trigger" id="dpT_tDeadline" onclick="DP.open('dpT_tDeadline','tDeadline')"><span class="dp-lbl dp-ph">Select deadline…</span><span class="dp-ico">▾</span></div></div><input type="hidden" id="tDeadline"></div>
+      <div class="fg"><label class="flbl">Deadline</label><div class="dp-wrap"><div class="dp-trigger" id="dpT_tDeadline" onclick="DP.open('dpT_tDeadline','tDeadline')"><span class="dp-lbl dp-ph">Select deadline…</span><span class="dp-ico">▾</span></div></div><input type="hidden" id="tDeadline"><div class="field-err" id="tDeadlineErr">Please select a deadline.</div></div>
       <div class="fg"><label class="flbl">Note <span style="font-weight:400;color:var(--dim);text-transform:none;letter-spacing:0">(optional)</span></label><input type="text" id="tNote" placeholder="e.g. Q2 Goal, Monthly Target…" autocomplete="off"></div>
       <div class="mft">
         <button type="button" class="btn btn-ghost" onclick="A.close('targetMod')">Cancel</button>
@@ -632,6 +639,7 @@ textarea{resize:vertical;min-height:72px}
 </div>
 
 <div id="ctip"></div>
+<div id="toast"></div>
 
 <script>
 // ── UTILS ──────────────────────────────────────────────────────────────────
@@ -826,7 +834,7 @@ const A={
     this.save();this.render();
   },
   async delAcc(id){
-    if(this.s.accounts.length<=1){alert('Cannot delete the last account.');return}
+    if(this.s.accounts.length<=1){this.toast('Cannot delete the last account.',true);return}
     await apiFetch('/accounts/'+id,{method:'DELETE'});
     this.s.accounts=this.s.accounts.filter(a=>a.id!==id);
     this.s.records=this.s.records.filter(r=>r.accId!==id);
@@ -989,12 +997,12 @@ const A={
 <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" style="stop-color:var(--p);stop-opacity:.22"/><stop offset="100%" style="stop-color:var(--p);stop-opacity:.01"/></linearGradient></defs>
 <g transform="translate(${pd.l},${pd.t})">
 ${yTk.map(t=>`<line x1="0" y1="${t.y.toFixed(1)}" x2="${cW}" y2="${t.y.toFixed(1)}" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
-<text x="-7" y="${(t.y+4).toFixed(1)}" text-anchor="end" fill="#555" font-size="10" font-family="JetBrains Mono,monospace">${t.v>=0?'+':''}${Math.abs(t.v)>=1000?(t.v/1000).toFixed(1)+'K':t.v.toFixed(0)}</text>`).join('')}
+<text x="-7" y="${(t.y+4).toFixed(1)}" text-anchor="end" fill="var(--dim)" font-size="10" font-family="JetBrains Mono,monospace">${t.v>=0?'+':''}${Math.abs(t.v)>=1000?(t.v/1000).toFixed(1)+'K':t.v.toFixed(0)}</text>`).join('')}
 <line x1="0" y1="${zY.toFixed(1)}" x2="${cW}" y2="${zY.toFixed(1)}" stroke="rgba(255,255,255,.13)" stroke-width="1" stroke-dasharray="4,4"/>
 <path d="${aD}" fill="url(#lg)"/>
 <path d="${pD}" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--p)"/>
 ${data.map((d,i)=>`<circle cx="${xS(i).toFixed(1)}" cy="${yS(d.cum).toFixed(1)}" r="2.5" style="fill:${d.pnl>=0?'var(--p)':'#ff3366'};pointer-events:none"/>`).join('')}
-${xLb.map(l=>`<text x="${l.x.toFixed(1)}" y="${cH+18}" text-anchor="middle" fill="#444" font-size="10" font-family="JetBrains Mono,monospace" style="pointer-events:none">${l.lbl}</text>`).join('')}
+${xLb.map(l=>`<text x="${l.x.toFixed(1)}" y="${cH+18}" text-anchor="middle" fill="var(--dim)" font-size="10" font-family="JetBrains Mono,monospace" style="pointer-events:none">${l.lbl}</text>`).join('')}
 <line id="lcr" x1="0" y1="0" x2="0" y2="${cH}" stroke-width="1" stroke-dasharray="3,3" opacity="0" style="stroke:rgba(var(--p-rgb),.2);pointer-events:none"/>
 <circle id="lhl" cx="0" cy="0" r="5" fill="none" stroke-width="1.5" opacity="0" style="stroke:var(--p);pointer-events:none"/>
 <rect x="0" y="0" width="${cW}" height="${cH}" fill="transparent" style="cursor:crosshair" onmousemove="A.onLH(event)" onmouseleave="A.tipOff()"/>
@@ -1011,9 +1019,9 @@ ${xLb.map(l=>`<text x="${l.x.toFixed(1)}" y="${cH+18}" text-anchor="middle" fill
     return`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">
 <g transform="translate(${pd.l},${pd.t})">
 <line x1="0" y1="${zY}" x2="${cW}" y2="${zY}" stroke="rgba(255,255,255,.13)" stroke-width="1" style="pointer-events:none"/>
-<text x="-5" y="${zY+4}" text-anchor="end" fill="#555" font-size="9" font-family="JetBrains Mono,monospace" style="pointer-events:none">0</text>
-<text x="-5" y="11" text-anchor="end" fill="#555" font-size="9" font-family="JetBrains Mono,monospace" style="pointer-events:none">+${mx>=1000?(mx/1000).toFixed(1)+'K':mx.toFixed(0)}</text>
-<text x="-5" y="${cH}" text-anchor="end" fill="#555" font-size="9" font-family="JetBrains Mono,monospace" style="pointer-events:none">-${mx>=1000?(mx/1000).toFixed(1)+'K':mx.toFixed(0)}</text>
+<text x="-5" y="${zY+4}" text-anchor="end" fill="var(--dim)" font-size="9" font-family="JetBrains Mono,monospace" style="pointer-events:none">0</text>
+<text x="-5" y="11" text-anchor="end" fill="var(--dim)" font-size="9" font-family="JetBrains Mono,monospace" style="pointer-events:none">+${mx>=1000?(mx/1000).toFixed(1)+'K':mx.toFixed(0)}</text>
+<text x="-5" y="${cH}" text-anchor="end" fill="var(--dim)" font-size="9" font-family="JetBrains Mono,monospace" style="pointer-events:none">-${mx>=1000?(mx/1000).toFixed(1)+'K':mx.toFixed(0)}</text>
 ${data.map((d,i)=>{const h=Math.max(1,(Math.abs(d.pnl)/mx)*(cH/2)),x=i*(cW/data.length)+1,y=d.pnl>=0?zY-h:zY,cls=d.pnl>=0?'bp':'bn';
   return`<rect class="${cls}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bW.toFixed(1)}" height="${h.toFixed(1)}" rx="1" style="cursor:crosshair" onmousemove="A.onBH(event,${i})" onmouseleave="A.tipOff()"/>`;
 }).join('')}
@@ -1054,7 +1062,7 @@ ${data.map((d,i)=>{const h=Math.max(1,(Math.abs(d.pnl)/mx)*(cH/2)),x=i*(cW/data.
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0;align-items:flex-start">
             <button class="btn btn-sm btn-ghost" onclick="A.openTarget(${t.id})">Edit</button>
-            <button class="btn btn-sm btn-danger" onclick="A.confDelTarget(${t.id})">Del</button>
+            <button class="btn btn-sm btn-danger" onclick="A.confDelTarget(${t.id})">Delete</button>
           </div>
         </div>
         <div class="pt-prog-wrap">
@@ -1075,11 +1083,6 @@ ${data.map((d,i)=>{const h=Math.max(1,(Math.abs(d.pnl)/mx)*(cH/2)),x=i*(cW/data.
     }).join('');
     return`
 <div class="sg e1">
-  <div class="sg-lbl" style="display:flex;align-items:center;justify-content:space-between"><span>PROFIT TARGETS</span><button class="btn btn-sm" onclick="A.openTarget()">+ New Target</button></div>
-  ${acctTargets.length?targetsHtml:`<div style="padding:10px 0 2px;color:var(--dim);font-size:12px">No targets set. <button class="btn btn-sm btn-ghost" style="margin-left:8px" onclick="A.openTarget()">+ Set Target</button></div>`}
-</div>
-
-<div class="sg e1">
   <div class="sg-lbl">P&amp;L OVERVIEW</div>
   <div class="stat-grid">
     ${sc('Total P&L',`<span class="${pc}">${ctr(s.tot,'pnl','totpnl')}</span>`)}
@@ -1088,6 +1091,11 @@ ${data.map((d,i)=>{const h=Math.max(1,(Math.abs(d.pnl)/mx)*(cH/2)),x=i*(cW/data.
     ${sc('Net Deposits',s.netTx!==0?`<span class="${s.netTx>0?'pos':'neg'}">${ctr(s.netTx,'pnl','ntx')}</span>`:`<span style="color:var(--dim)">—</span>`)}
     ${sc('Initial Capital',ctr(s.init,'$','init'))}
   </div>
+</div>
+
+<div class="sg e1">
+  <div class="sg-lbl" style="display:flex;align-items:center;justify-content:space-between"><span>PROFIT TARGETS</span><button class="btn btn-sm" onclick="A.openTarget()">+ New Target</button></div>
+  ${acctTargets.length?targetsHtml:`<div style="padding:10px 0 2px;color:var(--dim);font-size:12px">No targets set. <button class="btn btn-sm btn-ghost" style="margin-left:8px" onclick="A.openTarget()">+ Set Target</button></div>`}
 </div>
 
 <div class="sg e2">
@@ -1216,6 +1224,7 @@ ${(()=>{
     <input type="text" placeholder="Search…" value="${esc(this.s.filter.q)}" oninput="A.setF('q',this.value)" style="max-width:170px">
     <div class="cs-trigger" id="fsStrat" style="width:auto;min-width:120px;max-width:140px" onclick="A._csOpen('fsStrat')"><span class="cs-val">${this.s.filter.strat?esc(this.s.filter.strat):'All Strategies'}</span><span class="cs-ico">▾</span></div>
     <div class="cs-trigger" id="fsAsset" style="width:auto;min-width:110px;max-width:130px" onclick="A._csOpen('fsAsset')"><span class="cs-val">${this.s.filter.asset?esc(this.s.filter.asset):'All Assets'}</span><span class="cs-ico">▾</span></div>
+    ${(this.s.filter.q||this.s.filter.strat||this.s.filter.asset)?`<button class="btn btn-sm btn-ghost" onclick="A.clearFilters()">✕ Clear</button>`:''}
     ${recs.length!==s.recs.length?`<span style="color:var(--dim);font-size:12px">${recs.length} of ${s.recs.length}</span>`:''}
     ${s.recs.length?`<button class="btn btn-sm btn-ghost" onclick="A.csv()" style="margin-left:auto">↓ CSV</button>`:''}
   </div>
@@ -1242,7 +1251,7 @@ ${(()=>{
       <td style="color:var(--dim);font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.notes)||'—'}</td>
       <td><div class="td-act">
         <button class="btn btn-sm btn-ghost" onclick="A.openEdit(${r.id})">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="A.confDel(${r.id})">Del</button>
+        <button class="btn btn-sm btn-danger" onclick="A.confDel(${r.id})">Delete</button>
       </div></td>
     </tr>`).join('')}</tbody>
   </table></div>
@@ -1281,7 +1290,7 @@ ${(()=>{
       <td><span class="badge ${t.type==='deposit'?'bw':'ba'}">${t.type==='deposit'?'DEPOSIT':'WITHDRAW'}</span></td>
       <td class="td-pnl ${t.type==='deposit'?'pos':'neg'}">${t.type==='deposit'?'+':'-'}${F.$(t.amount)}</td>
       <td style="color:var(--dim);font-size:12px">${esc(t.notes)||'—'}</td>
-      <td><div class="td-act"><button class="btn btn-sm btn-danger" onclick="A.confDelTx(${t.id})">Del</button></div></td>
+      <td><div class="td-act"><button class="btn btn-sm btn-danger" onclick="A.confDelTx(${t.id})">Delete</button></div></td>
     </tr>`).join('')}</tbody>
   </table></div>`:'';
     return`<div class="e1">
@@ -1376,14 +1385,18 @@ ${(()=>{
       const acc=this.s.accounts.find(a=>a.id===this._txAccId);
       const pnl=this.s.records.filter(r=>r.accId===this._txAccId).reduce((s,r)=>s+r.pnl,0);
       const currentCap=(acc?.cap||0)+this.netTx(this._txAccId)+pnl;
-      if(amount>currentCap){alert(`Cannot withdraw ${F.$(amount)} — current capital is only ${F.$(currentCap)}.`);return;}
+      if(amount>currentCap){this.toast(`Cannot withdraw ${F.$(amount)} — balance is ${F.$(currentCap)}.`,true);return;}
     }
-    const tx=await apiFetch('/transactions',{method:'POST',body:{
-      date:document.getElementById('txDate').value,amount,type:this._txType,
-      notes:document.getElementById('txNotes').value.trim(),accId:this._txAccId,
-    }});
-    if(!tx)return;
-    this.s.transactions.push(tx);this.close('txMod');this.render();
+    const btn=e.target.querySelector('button[type=submit]');
+    if(btn){btn.disabled=true;btn.textContent='Saving…';}
+    try{
+      const tx=await apiFetch('/transactions',{method:'POST',body:{
+        date:document.getElementById('txDate').value,amount,type:this._txType,
+        notes:document.getElementById('txNotes').value.trim(),accId:this._txAccId,
+      }});
+      if(!tx)return;
+      this.s.transactions.push(tx);this.close('txMod');this.render();
+    }finally{if(btn){btn.disabled=false;btn.textContent=this._txType==='deposit'?'Save Deposit':'Save Withdrawal';}}
   },
   async delTx(id){
     await apiFetch('/transactions/'+id,{method:'DELETE'});
@@ -1504,6 +1517,7 @@ ${(()=>{
   },
   sort(c){if(this.s.sort.col===c)this.s.sort.dir=this.s.sort.dir==='asc'?'desc':'asc';else{this.s.sort.col=c;this.s.sort.dir='desc'};this.render()},
   setF(k,v){this.s.filter[k]=v;this.render()},
+  clearFilters(){this.s.filter={q:'',strat:'',asset:''};this.render()},
 
   populateSels(curStrat,curAsset){
     const sel=id=>document.getElementById(id);
@@ -1549,20 +1563,40 @@ ${(()=>{
     document.getElementById('aCap').value='';
     document.getElementById('accMod').classList.add('open');
   },
-  close(id){document.getElementById(id).classList.remove('open')},
+  toast(msg,isErr=false){
+    const t=document.getElementById('toast');if(!t)return;
+    clearTimeout(this._toastTimer);
+    t.textContent=msg;t.className='show'+(isErr?' toast-err':'');
+    this._toastTimer=setTimeout(()=>t.className='',2800);
+  },
+  close(id){
+    document.getElementById(id).classList.remove('open');
+    if(id==='confMod'){const b=document.getElementById('confBtn');if(b)b.textContent='Delete';}
+  },
 
   async submitRec(e){
     e.preventDefault();
     const date=document.getElementById('rDate').value;
-    if(!date){const lbl=document.querySelector('#dpT_rDate .dp-lbl');if(lbl)lbl.style.color='var(--r)';return;}
+    if(!date){
+      const lbl=document.querySelector('#dpT_rDate .dp-lbl');if(lbl)lbl.style.color='var(--r)';
+      document.getElementById('dpT_rDate')?.classList.add('dp-invalid');
+      const err=document.getElementById('rDateErr');if(err)err.style.display='block';
+      return;
+    }
+    document.getElementById('dpT_rDate')?.classList.remove('dp-invalid');
+    const err=document.getElementById('rDateErr');if(err)err.style.display='none';
+    const btn=e.target.querySelector('button[type=submit]');
+    if(btn){btn.disabled=true;btn.textContent='Saving…';}
     const d={date,pnl:document.getElementById('rPnl').value,strat:document.getElementById('rStrat').value,asset:document.getElementById('rAsset').value,notes:document.getElementById('rNotes').value};
-    this.close('recMod');
-    this.s.editId?await this.updRec(this.s.editId,d):await this.addRec(d);
+    try{this.s.editId?await this.updRec(this.s.editId,d):await this.addRec(d);}
+    finally{this.close('recMod');if(btn){btn.disabled=false;btn.textContent='Save Record';}}
   },
   async submitAcc(e){
     e.preventDefault();
-    await this.addAcc({name:document.getElementById('aName').value,cap:document.getElementById('aCap').value});
-    this.close('accMod');
+    const btn=e.target.querySelector('button[type=submit]');
+    if(btn){btn.disabled=true;btn.textContent='Creating…';}
+    try{await this.addAcc({name:document.getElementById('aName').value,cap:document.getElementById('aCap').value});}
+    finally{this.close('accMod');if(btn){btn.disabled=false;btn.textContent='Create Account';}}
   },
 
   confDel(id){
@@ -1616,10 +1650,19 @@ ${(()=>{
   async submitTarget(e){
     e.preventDefault();
     const deadline=document.getElementById('tDeadline').value;
-    if(!deadline){const lbl=document.querySelector('#dpT_tDeadline .dp-lbl');if(lbl)lbl.style.color='var(--r)';return;}
+    if(!deadline){
+      const lbl=document.querySelector('#dpT_tDeadline .dp-lbl');if(lbl)lbl.style.color='var(--r)';
+      document.getElementById('dpT_tDeadline')?.classList.add('dp-invalid');
+      const err=document.getElementById('tDeadlineErr');if(err)err.style.display='block';
+      return;
+    }
+    document.getElementById('dpT_tDeadline')?.classList.remove('dp-invalid');
+    const err=document.getElementById('tDeadlineErr');if(err)err.style.display='none';
+    const btn=e.target.querySelector('button[type=submit]');
+    if(btn){btn.disabled=true;btn.textContent='Saving…';}
     const d={target:document.getElementById('tTarget').value,deadline,note:document.getElementById('tNote').value};
-    this.close('targetMod');
-    this._targetEditId?await this.updTarget(this._targetEditId,d):await this.addTarget(d);
+    try{this._targetEditId?await this.updTarget(this._targetEditId,d):await this.addTarget(d);}
+    finally{this.close('targetMod');if(btn){btn.disabled=false;btn.textContent='Save Target';}}
   },
   confDelTarget(id){
     const t=this.s.targets.find(t=>t.id===id);
@@ -1720,8 +1763,8 @@ ${(()=>{
     return`<div class="e1">
 <div class="cal-hd">
   <div class="cal-nav-row">
-    <button class="cal-nav-btn" onclick="A.calPrev()">←</button>
-    <button class="cal-nav-btn" onclick="A.calNext()">→</button>
+    <button class="cal-nav-btn" onclick="A.calPrev()" aria-label="Previous month">←</button>
+    <button class="cal-nav-btn" onclick="A.calNext()" aria-label="Next month">→</button>
     <div class="cal-month-label">
       <span class="cal-month-txt">${MN[mo]}</span>
       <span class="cal-year-txt">${yr}</span>
@@ -1890,6 +1933,12 @@ ${(()=>{
       await this.load();
     }catch(e){document.getElementById('regErr').textContent='Connection error';}
     finally{btn.disabled=false;btn.textContent='Create Account';}
+  },
+  togglePw(id,btn){
+    const inp=document.getElementById(id);if(!inp)return;
+    const show=inp.type==='password';
+    inp.type=show?'text':'password';
+    btn.style.color=show?'var(--ink)':'var(--dim)';
   },
   logout(){
     localStorage.removeItem('tj_token');
